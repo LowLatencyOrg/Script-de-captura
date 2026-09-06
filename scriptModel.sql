@@ -4,6 +4,16 @@ create database grupo10;
 
 use grupo10;
 
+create table empresa (
+	id int primary key auto_increment,
+    nomeFantasia varchar (45),
+    telefone char (11),
+    cnpj char (14),
+    razaoSocial varchar (45),
+    email varchar (45),
+    codigoAtivacao char (5)
+);
+
 create table maquina (
 	id int primary key auto_increment,
     nome varchar(45) not null,
@@ -35,15 +45,7 @@ create table registro (
     constraint fkMaquinaRegistro foreign key (fkMaquina) references maquina(id)
 );
 
-create table empresa (
-	id int primary key auto_increment,
-    nomeFantasia varchar (45),
-    telefone char (11),
-    cnpj char (14),
-    razaoSocial varchar (45),
-    email varchar (45),
-    codigoAtivacao char (5)
-);
+ALTER TABLE registro MODIFY COLUMN cpuUsoPorNucleo VARCHAR(255);
 
 create table cargo (
 	id int primary key auto_increment,
@@ -66,4 +68,5 @@ SELECT * FROM maquina;
 
 SELECT nome FROM maquina WHERE id = 1;
 
-SELECT * FROM registros;
+SELECT * FROM registro;
+
