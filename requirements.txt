@@ -1,8 +1,6 @@
-<<<<<<< HEAD
-=======
 mysql-connector==2.2.9
 mysql-connector-python==26.7.0
 psutil==7.2.2
 PyMySQL==1.2.0
 python-dotenv==1.2.3
->>>>>>> 886bdd6654755e49d1b344a60d16585a4a0247a6
+
