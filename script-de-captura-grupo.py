@@ -16,6 +16,26 @@ cursor = db.cursor()
 
 print("\n_______________________________________________________________")
 
+limite_atencao = 70 
+limite_alerta = 90
+
+
+#Função pra definir a partir de quanto vai emitir alerta
+
+def classificar_percentual(valor, limiteAtencao = limite_atencao, limiteAlerta = limite_alerta):
+    if valor >= limite_alerta:
+        return "Alerta!"
+    elif valor >= limite_atencao:
+        return "Atenção"
+    else:
+        return "Normal"
+
+#Função pra puxar o pior status e exibir quando o usuario selecionar o exibir status geral
+
+def pior_status(lista_status):
+    pior_componente = {"Normal":0,"Atenção":1,"Alerta!":2}
+    return max(lista_status, key=lambda status: pior_componente[status])
+
 
 def menuCaptura(id):
     while True:
@@ -65,6 +85,13 @@ def menuCaptura(id):
                     download_bytesF = round(download_bytes / 1000000, 1)
                     upload_bytesF = round(upload_bytes / 1000000, 1)
 
+                    # Discretização 
+
+                    status_cpu = classificar_percentual(uso_cpu)
+                    status_ram = classificar_percentual(ram_percentual)
+                    status_disco = classificar_percentual(disco_percentual)
+                    status_geral = pior_status([status_cpu,status_ram,status_disco])
+
                     print("Uso da CPU: ", uso_cpu, "%")
                     print("Frequência atual da CPU: ", freq_cpu, "Mhz\n\n")
 
@@ -78,17 +105,21 @@ def menuCaptura(id):
                     print("Uso por Núcleo da CPU: ")
                     print(nucleo_cpu, '\n')
 
+                    print("Status da CPU: ",status_cpu, '\n')
+
                     comando_sql = """
                         INSERT INTO registro 
                         (fkMaquina, cpuPorcentagemUso, cpuFrequenciaAtual, cpuUsoPorNucleo,
                          ramDisponivel, ramUsada, ramPercentualUso,
-                          discoEspacoUsado, discoEspacoLivre,
+                          discoEspacoUsado, discoEspacoLivre, discoPercentualUso,
                           downloadRede, uploadRede,
-                           dtRegistro) VALUES (%s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, NOW())"""
+                          statusCpu, statusRam, statusDisco, statusGeral,
+                           dtRegistro) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())"""
                     valores = (id, uso_cpu, freq_cpu, nucleo_cpu_str, 
                                ram_disponivel_gb, ram_usada_gb, ram_percentual,
-                                 disco_usado_gb, disco_livre_gb,
-                                 download_bytesF, upload_bytesF)
+                                 disco_usado_gb, disco_livre_gb, disco_percentual,
+                                 download_bytesF, upload_bytesF,
+                                 status_cpu, status_ram, status_disco, status_geral)
 
                     cursor.execute(comando_sql, valores)
                     db.commit()
@@ -138,6 +169,13 @@ def menuCaptura(id):
                     download_bytes = rede.bytes_recv
                     upload_bytes = rede.bytes_sent
 
+                    #Discretização
+
+                    status_cpu = classificar_percentual(uso_cpu)
+                    status_ram = classificar_percentual(ram_percentual)
+                    status_disco = classificar_percentual(disco_percentual)
+                    status_geral = pior_status([status_cpu,status_ram,status_disco])
+
                     download_bytesF = round(download_bytes / 1000000, 1)
                     upload_bytesF = round(upload_bytes / 1000000, 1)
 
@@ -150,17 +188,21 @@ def menuCaptura(id):
                     print("Data e Hora da Captura: ")
                     print(data_formatada, hora_atual, '\n')
 
+                    print("Status da RAM: ", status_ram, '\n')
+
                     comando_sql = """
                         INSERT INTO registro 
                         (fkMaquina, cpuPorcentagemUso, cpuFrequenciaAtual, cpuUsoPorNucleo,
                          ramDisponivel, ramUsada, ramPercentualUso,
-                          discoEspacoUsado, discoEspacoLivre,
+                          discoEspacoUsado, discoEspacoLivre, discoPercentualUso,
                           downloadRede, uploadRede,
-                           dtRegistro) VALUES (%s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, NOW())"""
+                          statusCpu, statusRam, statusDisco, statusGeral,
+                           dtRegistro) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())"""
                     valores = (id, uso_cpu, freq_cpu, nucleo_cpu_str, 
                                ram_disponivel_gb, ram_usada_gb, ram_percentual,
-                                 disco_usado_gb, disco_livre_gb,
-                                 download_bytesF, upload_bytesF)
+                                 disco_usado_gb, disco_livre_gb, disco_percentual,
+                                 download_bytesF, upload_bytesF,
+                                 status_cpu, status_ram, status_disco, status_geral)
                     
                     cursor.execute(comando_sql, valores)
                     cursor.execute(comando_sql, valores)
@@ -200,6 +242,11 @@ def menuCaptura(id):
 
                     # Memoria RAM
 
+                    ram = p.virtual_memory()
+                    ram_percentual = ram.percent
+                    ram_usada_gb = int(ram.used / (1024**3))
+                    ram_disponivel_gb = int(ram.available / (1024**3))
+
                     print("Uso do Disco: ", disco_percentual, "%")
                     print("Espaço de Disco em uso: ", round(disco.used / 1000000000, 1), "GB\n\n")
 
@@ -212,23 +259,34 @@ def menuCaptura(id):
                     download_bytesF = round(download_bytes / 1000000, 1)
                     upload_bytesF = round(upload_bytes / 1000000, 1)
 
+                    #Discretização
+
+                    status_cpu = classificar_percentual(uso_cpu)
+                    status_ram = classificar_percentual(ram_percentual)
+                    status_disco = classificar_percentual(disco_percentual)
+                    status_geral = pior_status([status_cpu,status_ram,status_disco])
+
                     agora = datetime.now()
                     data_formatada = agora.strftime("%d/%m/%Y")
                     hora_atual = agora.strftime("%H:%M:%S")
                     print("Data e Hora da Captura: ")
                     print(data_formatada, hora_atual, '\n')
 
+                    print("Status do Disco: ", status_disco, '\n')
+
                     comando_sql = """
                         INSERT INTO registro 
                         (fkMaquina, cpuPorcentagemUso, cpuFrequenciaAtual, cpuUsoPorNucleo,
                          ramDisponivel, ramUsada, ramPercentualUso,
-                          discoEspacoUsado, discoEspacoLivre,
+                          discoEspacoUsado, discoEspacoLivre, discoPercentualUso,
                           downloadRede, uploadRede,
-                           dtRegistro) VALUES (%s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, NOW())"""
+                          statusCpu, statusRam, statusDisco, statusGeral,
+                           dtRegistro) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())"""
                     valores = (id, uso_cpu, freq_cpu, nucleo_cpu_str, 
                                ram_disponivel_gb, ram_usada_gb, ram_percentual,
-                                 disco_usado_gb, disco_livre_gb,
-                                 download_bytesF, upload_bytesF)
+                                 disco_usado_gb, disco_livre_gb, disco_percentual,
+                                 download_bytesF, upload_bytesF,
+                                 status_cpu, status_ram, status_disco, status_geral)
 
                     cursor.execute(comando_sql, valores)
                     cursor.execute(comando_sql, valores)
@@ -279,6 +337,13 @@ def menuCaptura(id):
                     disco_usado_gb = int(disco.used / (1024**3))
                     disco_livre_gb = int(disco.free / (1024**3))
 
+                    #Discretização -
+
+                    status_cpu = classificar_percentual(uso_cpu)
+                    status_ram = classificar_percentual(ram_percentual)
+                    status_disco = classificar_percentual(disco_percentual)
+                    status_geral = pior_status([status_cpu,status_ram,status_disco])
+
                     print("Bytes Enviados na Rede: ", upload_bytesF, "MB")
                     print("Bytes Recebidos na Rede: ", download_bytesF, "MB\n\n")
 
@@ -288,17 +353,21 @@ def menuCaptura(id):
                     print("Data e Hora da Captura: ")
                     print(data_formatada, hora_atual, '\n')
 
+                    print("Status Geral: ", status_geral,'\n')
+
                     comando_sql = """
                         INSERT INTO registro 
                         (fkMaquina, cpuPorcentagemUso, cpuFrequenciaAtual, cpuUsoPorNucleo,
                          ramDisponivel, ramUsada, ramPercentualUso,
-                          discoEspacoUsado, discoEspacoLivre,
+                          discoEspacoUsado, discoEspacoLivre, discoPercentualUso,
                           downloadRede, uploadRede,
-                           dtRegistro) VALUES (%s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, NOW())"""
+                          statusCpu, statusRam, statusDisco, statusGeral,
+                           dtRegistro) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())"""
                     valores = (id, uso_cpu, freq_cpu, nucleo_cpu_str, 
                                ram_disponivel_gb, ram_usada_gb, ram_percentual,
-                                 disco_usado_gb, disco_livre_gb,
-                                 download_bytesF, upload_bytesF)
+                                 disco_usado_gb, disco_livre_gb, disco_percentual,
+                                 download_bytesF, upload_bytesF,
+                                 status_cpu, status_ram, status_disco, status_geral)
 
                     cursor.execute(comando_sql, valores)
                     db.commit()
@@ -316,7 +385,7 @@ def menuCaptura(id):
             cursor_dict = db.cursor(dictionary=True)
 
             comando_sql = """
-                SELECT idRegistro, cpuPorcentagemUso, ramPercentualUso, discoEspacoUsado, downloadRede, uploadRede, dtRegistro 
+                SELECT idRegistro, cpuPorcentagemUso, ramPercentualUso, discoEspacoUsado, downloadRede, uploadRede, statusGeral, dtRegistro 
                 FROM registro 
                 WHERE fkMaquina = %s 
                 ORDER BY dtRegistro DESC 
@@ -331,7 +400,7 @@ def menuCaptura(id):
                 for registro in historico:
                     data = registro['dtRegistro'].strftime("%d/%m/%Y %H:%M:%S") if registro['dtRegistro'] else "N/D"
 
-                    print(f"ID: {registro['idRegistro']} | CPU: {registro['cpuPorcentagemUso']}% | RAM: {registro['ramPercentualUso']}% | Disco: {registro['discoEspacoUsado']} GB | Download: {registro['downloadRede']} B | Upload: {registro['uploadRede']} B | Data: {data}")
+                    print(f"ID: {registro['idRegistro']} | CPU: {registro['cpuPorcentagemUso']}% | RAM: {registro['ramPercentualUso']}% | Disco: {registro['discoEspacoUsado']} GB | Download: {registro['downloadRede']} B | Upload: {registro['uploadRede']} B | Status: {registro['statusGeral']} | Data: {data}")
             else:
                 print("\nNenhum histórico encontrado para esta Máquina no Banco de Dados.")
 

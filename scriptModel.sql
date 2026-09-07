@@ -47,6 +47,17 @@ create table registro (
 
 ALTER TABLE registro MODIFY COLUMN cpuUsoPorNucleo VARCHAR(255);
 
+ALTER TABLE registro
+    ADD COLUMN discoPercentualUso DECIMAL(4,1) AFTER discoEspacoLivre;
+
+ALTER TABLE registro
+    ADD COLUMN statusCpu   VARCHAR(10) AFTER uploadRede,
+    ADD COLUMN statusRam   VARCHAR(10) AFTER statusCpu,
+    ADD COLUMN statusDisco VARCHAR(10) AFTER statusRam,
+    ADD COLUMN statusGeral VARCHAR(10) AFTER statusDisco;
+
+
+
 create table cargo (
 	id int primary key auto_increment,
     titulo varchar (45)
