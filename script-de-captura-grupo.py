@@ -7,8 +7,8 @@ from mysql.connector import connection
 db = connection.MySQLConnection(
     host="localhost",
     port=3306,
-    user="aluno2",
-    passwd="sptech",
+    user="ec2",
+    passwd="ec2123",
     database="grupo10"
 )
 
