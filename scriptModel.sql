@@ -32,7 +32,7 @@ create table registro (
     fkMaquina int,
     cpuPorcentagemUso decimal (4,1),
     cpuFrequenciaAtual int,
-    cpuUsoPorNucleo int, 
+    cpuUsoPorNucleo varchar(255), 
     cpuTemperatura Decimal (5,2),
     ramDisponivel int,
     ramUsada int,
