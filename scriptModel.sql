@@ -26,6 +26,7 @@ create table maquina (
     constraint fkMaquinaEmpresa foreign key (fkEmpresa) references empresa(id)
 );
 
+<<<<<<< HEAD
 create table registro (
 	idRegistro int auto_increment,
     fkMaquina int,
