@@ -1,83 +1,65 @@
-create database grupo10;
-
--- drop database grupo10;
-
-use grupo10;
-
-create table empresa (
-	id int primary key auto_increment,
-    nomeFantasia varchar (45),
-    telefone char (11),
-    cnpj char (14),
-    razaoSocial varchar (45),
-    email varchar (45),
-    codigoAtivacao char (5)
+CREATE TABLE IF NOT EXISTS empresa (
+id INT PRIMARY KEY AUTO_INCREMENT,
+nomeFantasia VARCHAR(45),
+telefone CHAR(11),
+cnpj CHAR(14),
+razaoSocial VARCHAR(45),
+email VARCHAR(45),
+codigoAtivacao CHAR(5)
 );
 
-create table maquina (
-	id int primary key auto_increment,
-    nome varchar(45) not null,
-    nucleosFisicos int,
-    nucleosLogicos int,
-    capacidadeTotal bigint,
-    ramTotal bigint,
-    dtCadastro datetime,
-    fkEmpresa int,
-    constraint fkMaquinaEmpresa foreign key (fkEmpresa) references empresa(id)
+CREATE TABLE IF NOT EXISTS cargo (
+id INT PRIMARY KEY AUTO_INCREMENT,
+titulo VARCHAR(45)
 );
 
-create table registro (
-	idRegistro int auto_increment,
-    fkMaquina int,
-    cpuPorcentagemUso decimal (4,1),
-    cpuFrequenciaAtual int,
-    cpuUsoPorNucleo int, 
-    cpuTemperatura Decimal (5,2),
-    ramDisponivel int,
-    ramUsada int,
-    ramPercentualUso decimal(4,1),
-    discoEspacoUsado int,
-    discoEspacoLivre int,
-    downloadRede bigint,
-    uploadRede bigint,
-    dtRegistro datetime,
-	constraint pkComposta primary key (idRegistro, fkMaquina),
-    constraint fkMaquinaRegistro foreign key (fkMaquina) references maquina(id)
+CREATE TABLE IF NOT EXISTS funcionario (
+id INT PRIMARY KEY AUTO_INCREMENT,
+nome VARCHAR(45),
+email VARCHAR(45),
+senha VARCHAR(45),
+dataNascimento DATE,
+fkEmpresa INT,
+fkCargo INT,
+CONSTRAINT fkEmpresaFuncionario
+FOREIGN KEY (fkEmpresa) REFERENCES empresa(id),
+CONSTRAINT fkCargoFuncionario
+FOREIGN KEY (fkCargo) REFERENCES cargo(id)
 );
 
-ALTER TABLE registro MODIFY COLUMN cpuUsoPorNucleo VARCHAR(255);
-
-ALTER TABLE registro
-    ADD COLUMN discoPercentualUso DECIMAL(4,1) AFTER discoEspacoLivre;
-
-ALTER TABLE registro
-    ADD COLUMN statusCpu   VARCHAR(10) AFTER uploadRede,
-    ADD COLUMN statusRam   VARCHAR(10) AFTER statusCpu,
-    ADD COLUMN statusDisco VARCHAR(10) AFTER statusRam,
-    ADD COLUMN statusGeral VARCHAR(10) AFTER statusDisco;
-
-
-
-create table cargo (
-	id int primary key auto_increment,
-    titulo varchar (45)
+CREATE TABLE IF NOT EXISTS maquina (
+id INT PRIMARY KEY AUTO_INCREMENT,
+nome VARCHAR(45) NOT NULL,
+nucleosFisicos INT,
+nucleosLogicos INT,
+capacidadeTotal BIGINT,
+ramTotal BIGINT,
+dtCadastro DATETIME,
+fkEmpresa INT,
+CONSTRAINT fkMaquinaEmpresa
+FOREIGN KEY (fkEmpresa) REFERENCES empresa(id)
 );
 
-create table funcionario (
-	id int primary key auto_increment,
-    nome varchar (45),
-    email varchar (45),
-    senha varchar (45),
-    dataNascimento date,
-    fkEmpresa int, 
-    fkCargo int, 
-    constraint fkEmpresaFuncionario foreign key (fkEmpresa) references empresa (id),
-    constraint fkCargoFuncionario foreign key (fkCargo) references cargo (id)
+CREATE TABLE IF NOT EXISTS registro (
+idRegistro INT AUTO_INCREMENT,
+fkMaquina INT,
+cpuPorcentagemUso DECIMAL(4,1),
+cpuFrequenciaAtual INT,
+cpuUsoPorNucleo VARCHAR(255),
+cpuTemperatura DECIMAL(5,2),
+ramDisponivel INT,
+ramUsada INT,
+ramPercentualUso DECIMAL(4,1),
+discoEspacoUsado INT,
+discoEspacoLivre INT,
+downloadRede BIGINT,
+uploadRede BIGINT,
+statusCpu VARCHAR (10),
+statusRam VARCHAR(10),
+statusDisco VARCHAR (10),
+statusGeral(10),
+dtRegistro DATETIME,
+CONSTRAINT pkComposta PRIMARY KEY (idRegistro, fkMaquina),
+CONSTRAINT fkMaquinaRegistro
+FOREIGN KEY (fkMaquina) REFERENCES maquina(id)
 );
-
-SELECT * FROM maquina;
-
-SELECT nome FROM maquina WHERE id = 1;
-
-SELECT * FROM registro;
-
