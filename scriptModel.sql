@@ -1,4 +1,4 @@
-create database grupo10;
+-- create database grupo10;
 
 -- drop database grupo10;
 
