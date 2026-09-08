@@ -26,7 +26,6 @@ create table maquina (
     constraint fkMaquinaEmpresa foreign key (fkEmpresa) references empresa(id)
 );
 
-<<<<<<< HEAD
 create table registro (
 	idRegistro int auto_increment,
     fkMaquina int,
@@ -66,11 +65,3 @@ create table funcionario (
     constraint fkEmpresaFuncionario foreign key (fkEmpresa) references empresa (id),
     constraint fkCargoFuncionario foreign key (fkCargo) references cargo (id)
 );
-
-SELECT * FROM maquina;
-
-SELECT nome FROM maquina WHERE id = 1;
-
-SELECT * FROM registro;
-
-ALTER TABLE registro MODIFY COLUMN cpuUsoPorNucleo VARCHAR(255);
